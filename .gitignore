@@ -1,0 +1,54 @@
+# Keep go.mod and go.sum tracked (do NOT ignore them)
+
+# Binaries for programs and plugins
+/bin/
+/build/
+
+# If you build executables in the repo root or inside cmd/, ignore common binary names
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+
+# Go vendor and dependency directories (optional to track vendor/ if you vendor deps)
+vendor/
+Godeps/
+
+# Package objects
+pkg/
+
+# Go workspace and module cache (user-specific)
+GOPATH/pkg/
+GOMODCACHE/
+
+# Build/test output
+_output/
+dist/
+*.prof
+*.coverprofile
+
+# Editor directories and files
+.vscode/
+.idea/
+*.iml
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+
+# Logs and temp
+*.log
+tmp/
+
+# Generated files by tools
+*.tmp
