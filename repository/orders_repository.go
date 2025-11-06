@@ -2,14 +2,16 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	uuid "github.com/jackc/pgx/pgtype/ext/gofrs-uuid"
+	"github.com/gofrs/uuid/v5"
+	uuidext "github.com/jackc/pgx-gofrs-uuid"
 	"github.com/jackc/pgx/v5"
 )
 
 type Order struct {
-	ID      uuid.UUID
+	ID      uuidext.UUID
 	Product string
 	Amount  int
 }
@@ -23,6 +25,8 @@ func NewOrdersRepository(context context.Context, connectionString string) (*Ord
 	if err != nil {
 		return nil, fmt.Errorf("не удалось подключиться к БД: %w", err)
 	}
+
+	uuidext.Register(connection.TypeMap())
 	return &OrdersRepository{connection: connection}, nil
 }
 
@@ -51,4 +55,62 @@ func (ordersRepository *OrdersRepository) GetAll(context context.Context) ([]Ord
 	}
 
 	return orders, nil
+}
+
+func (ordersRepository *OrdersRepository) GetByUuid(context context.Context, orderUuid uuidext.UUID) (Order, error) {
+	var order Order
+
+	row := ordersRepository.connection.QueryRow(
+		context,
+		"SELECT uuid, product, amount FROM orders WHERE uuid = $1",
+		orderUuid,
+	)
+	if err := row.Scan(&order.ID, &order.Product, &order.Amount); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return order, fmt.Errorf("запись не найдена по uuid: %s", uuid.UUID(orderUuid))
+		}
+		return order, fmt.Errorf("ошибка чтения строки: %w", err)
+	}
+
+	return order, nil
+}
+
+func (ordersRepository *OrdersRepository) Create(context context.Context, product string, amount int) (Order, error) {
+	var order Order
+
+	if product == "" {
+		return order, errors.New("product is empty")
+	}
+	if amount <= 0 {
+		return order, errors.New("amount must be greater than 0")
+	}
+
+	row := ordersRepository.connection.QueryRow(
+		context,
+		"INSERT INTO orders (product, amount) VALUES ($1, $2) RETURNING uuid, product, amount",
+		product,
+		amount,
+	)
+	if err := row.Scan(&order.ID, &order.Product, &order.Amount); err != nil {
+		return order, fmt.Errorf("не удалось создать запись: %w", err)
+	}
+
+	return order, nil
+}
+
+func (ordersRepository *OrdersRepository) DeleteByUuid(context context.Context, orderUuid uuidext.UUID) error {
+	tag, err := ordersRepository.connection.Exec(
+		context,
+		"DELETE FROM orders WHERE uuid = $1",
+		orderUuid,
+	)
+	if err != nil {
+		return fmt.Errorf("не удалось выполнить удаление: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("запись не найдена по uuid: %s", uuid.UUID(orderUuid))
+	}
+
+	return nil
 }
