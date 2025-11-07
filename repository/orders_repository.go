@@ -16,6 +16,12 @@ type Order struct {
 	Amount  int
 }
 
+type OrderDTO struct {
+	ID      uuid.UUID
+	Product string
+	Amount  int
+}
+
 type OrdersRepository struct {
 	connection *pgx.Conn
 }
@@ -34,16 +40,16 @@ func (ordersRepository *OrdersRepository) Close(context context.Context) error {
 	return ordersRepository.connection.Close(context)
 }
 
-func (ordersRepository *OrdersRepository) GetAll(context context.Context) ([]Order, error) {
+func (ordersRepository *OrdersRepository) GetAll(context context.Context) ([]OrderDTO, error) {
 	rows, err := ordersRepository.connection.Query(context, "SELECT uuid, product, amount FROM orders")
 	if err != nil {
 		return nil, fmt.Errorf("не удалось выполнить запрос к БД: %w", err)
 	}
 	defer rows.Close()
 
-	var orders []Order
+	var orders []OrderDTO
 	for rows.Next() {
-		var order Order
+		var order OrderDTO
 		if err := rows.Scan(&order.ID, &order.Product, &order.Amount); err != nil {
 			return nil, fmt.Errorf("ошибка чтения строки: %w", err)
 		}
@@ -57,8 +63,8 @@ func (ordersRepository *OrdersRepository) GetAll(context context.Context) ([]Ord
 	return orders, nil
 }
 
-func (ordersRepository *OrdersRepository) GetByUuid(context context.Context, orderUuid uuidext.UUID) (Order, error) {
-	var order Order
+func (ordersRepository *OrdersRepository) GetByUuid(context context.Context, orderUuid uuidext.UUID) (OrderDTO, error) {
+	var order OrderDTO
 
 	row := ordersRepository.connection.QueryRow(
 		context,
@@ -75,8 +81,8 @@ func (ordersRepository *OrdersRepository) GetByUuid(context context.Context, ord
 	return order, nil
 }
 
-func (ordersRepository *OrdersRepository) Create(context context.Context, product string, amount int) (Order, error) {
-	var order Order
+func (ordersRepository *OrdersRepository) Create(context context.Context, product string, amount int) (OrderDTO, error) {
+	var order OrderDTO
 
 	if product == "" {
 		return order, errors.New("product is empty")
@@ -98,7 +104,7 @@ func (ordersRepository *OrdersRepository) Create(context context.Context, produc
 	return order, nil
 }
 
-func (ordersRepository *OrdersRepository) DeleteByUuid(context context.Context, orderUuid uuidext.UUID) error {
+func (ordersRepository *OrdersRepository) DeleteByUuid(context context.Context, orderUuid uuid.UUID) error {
 	tag, err := ordersRepository.connection.Exec(
 		context,
 		"DELETE FROM orders WHERE uuid = $1",
