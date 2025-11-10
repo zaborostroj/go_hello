@@ -28,6 +28,8 @@ func main() {
 	router := gin.Default()
 	router.GET("/orders", ordersHandler.getAll)
 	router.GET("/orders/:uuid", ordersHandler.getByUuid)
+	router.POST("/orders", ordersHandler.createOrder)
+	router.DELETE("/orders/:uuid", ordersHandler.deleteByUuid)
 	router.Run("localhost:8080")
 }
 
@@ -52,6 +54,44 @@ func (handler *OrdersHandler) getByUuid(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, order)
 }
 
-func (handler *OrdersHandler) createOrder(context *gin.Context) {
+type ProductRequest struct {
+	Product string `json:"product"`
+	Amount  int    `json:"amount"`
+}
 
+func (handler *OrdersHandler) createOrder(context *gin.Context) {
+	var request ProductRequest
+
+	if context.Request.Body == nil {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Request body required"})
+		return
+	}
+
+	if err := context.ShouldBindJSON(&request); err != nil {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid request body: " + err.Error()})
+		return
+	}
+
+	if request.Product == "" || request.Amount == 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Product or amount required"})
+		return
+	}
+
+	result, err := handler.ordersRepository.Create(context, request.Product, request.Amount)
+	if err != nil {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	context.IndentedJSON(http.StatusCreated, result)
+}
+
+func (handler *OrdersHandler) deleteByUuid(context *gin.Context) {
+	orderUuid, err := uuid.FromString(context.Param("uuid"))
+	if err != nil {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error parsing uuid: " + context.Param("uuid")})
+		return
+	}
+	err = handler.ordersRepository.DeleteByUuid(context, orderUuid)
+	if err != nil {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
 }

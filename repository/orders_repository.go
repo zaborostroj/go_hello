@@ -10,12 +10,6 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type Order struct {
-	ID      uuidext.UUID
-	Product string
-	Amount  int
-}
-
 type OrderDTO struct {
 	ID      uuid.UUID
 	Product string
