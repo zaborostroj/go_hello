@@ -1,4 +1,4 @@
-package kafka_client
+package kafkaUtils
 
 import (
 	"log"
@@ -8,55 +8,46 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-type Client struct {
-	writer *kafka.Writer
-	reader *kafka.Reader
-}
-
 type Config struct {
 	Brokers []string
 	Topic   string
 	GroupID string
 }
 
-// NewClient TODO: left only reader/writer not both
-func NewClient(config Config) *Client {
-	return &Client{
-		writer: &kafka.Writer{
-			Addr:         kafka.TCP(config.Brokers...),
-			Topic:        config.Topic,
-			Balancer:     &kafka.LeastBytes{},
-			RequiredAcks: kafka.RequireAll,
-		},
-		reader: kafka.NewReader(kafka.ReaderConfig{
-			Brokers:        config.Brokers,
-			GroupID:        config.GroupID,
-			Topic:          config.Topic,
-			MinBytes:       1,
-			MaxBytes:       10e6, // 10MB
-			CommitInterval: time.Second,
-			StartOffset:    kafka.LastOffset,
-			Logger:         log.New(os.Stdout, "KAFKA-INFO: ", log.LstdFlags),
-			ErrorLogger:    log.New(os.Stderr, "KAFKA-ERR: ", log.LstdFlags),
-		}),
+func NewWriter(config Config) *kafka.Writer {
+	return &kafka.Writer{
+		Addr:         kafka.TCP(config.Brokers...),
+		Topic:        config.Topic,
+		Balancer:     &kafka.LeastBytes{},
+		RequiredAcks: kafka.RequireAll,
 	}
 }
 
-func (client *Client) Close() {
-	err := client.writer.Close()
-	if err != nil {
-		log.Print(err)
-	}
-	err = client.reader.Close()
+func CloseWriter(writer *kafka.Writer) {
+	err := writer.Close()
 	if err != nil {
 		log.Print(err)
 	}
 }
 
-func (client *Client) Writer() *kafka.Writer {
-	return client.writer
+func NewReader(config Config) *kafka.Reader {
+	readerConfig := kafka.ReaderConfig{
+		Brokers:        config.Brokers,
+		GroupID:        config.GroupID,
+		Topic:          config.Topic,
+		MinBytes:       1,
+		MaxBytes:       10e6, // 10MB
+		CommitInterval: time.Second,
+		StartOffset:    kafka.LastOffset,
+		Logger:         log.New(os.Stdout, "KAFKA-INFO: ", log.LstdFlags),
+		ErrorLogger:    log.New(os.Stderr, "KAFKA-ERR: ", log.LstdFlags),
+	}
+	return kafka.NewReader(readerConfig)
 }
 
-func (client *Client) Reader() *kafka.Reader {
-	return client.reader
+func CloseReader(reader *kafka.Reader) {
+	err := reader.Close()
+	if err != nil {
+		log.Print(err)
+	}
 }

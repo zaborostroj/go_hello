@@ -14,22 +14,19 @@ import (
 )
 
 func main() {
-	// Настройки Kafka
-	cfg := kafka_client.Config{
+	cfg := kafkaUtils.Config{
 		Brokers: []string{"localhost:29092"},
 		Topic:   "orders",
 		GroupID: "warehouse-group",
 	}
 
-	client := kafka_client.NewClient(cfg)
-	defer client.Close()
-
-	reader := client.Reader()
+	kafkaClient := kafkaUtils.NewReader(cfg)
+	defer kafkaUtils.CloseReader(kafkaClient)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Catch SIGINT/SIGTERM for the correct shutdown
+	// Catch SIGINT/SIGTERM for proper shutdown
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
@@ -41,10 +38,10 @@ func main() {
 	log.Println("Kafka listener started...")
 
 	for {
-		m, err := reader.FetchMessage(ctx)
+		m, err := kafkaClient.FetchMessage(ctx)
 		if err != nil {
 			if ctx.Err() != nil {
-				log.Println("🛑 Контекст отменён — слушатель завершает работу")
+				log.Println("🛑 Context cancelled — listener is shutting down")
 				break
 			}
 			if errors.Is(err, kafka.ErrGenerationEnded) {
@@ -52,11 +49,11 @@ func main() {
 				continue
 			}
 			if err.Error() == "EOF" {
-				log.Println("📭 EOF от Kafka — ожидание новых сообщений...")
+				log.Println("📭 EOF from Kafka — waiting for new messages...")
 				time.Sleep(time.Second)
 				continue
 			}
-			log.Printf("❌ Ошибка чтения сообщения: %v", err)
+			log.Printf("❌ Error reading message: %v", err)
 			time.Sleep(time.Second)
 			continue
 		}
@@ -64,10 +61,10 @@ func main() {
 		log.Printf("Received message from topic %s: key=%s, value=%s, offset=%d",
 			m.Topic, string(m.Key), string(m.Value), m.Offset)
 
-		if err := reader.CommitMessages(ctx, m); err != nil {
-			log.Printf("⚠️ Ошибка коммита offset’а: %v", err)
+		if err := kafkaClient.CommitMessages(ctx, m); err != nil {
+			log.Printf("⚠️ Error committing offset: %v", err)
 		} else {
-			log.Printf("✅ Offset зафиксирован: partition=%d offset=%d", m.Partition, m.Offset)
+			log.Printf("✅ Offset committed: partition=%d offset=%d", m.Partition, m.Offset)
 		}
 	}
 }

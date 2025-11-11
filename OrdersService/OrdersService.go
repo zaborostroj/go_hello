@@ -27,17 +27,15 @@ func main() {
 	}
 	defer ordersRepository.Close(ctx)
 
-	kafkaClient := kafka_client.NewClient(kafka_client.Config{
-		Brokers: []string{"localhost:29092"},
-		Topic:   "orders",
-		GroupID: "orders-group",
-	})
-	defer kafkaClient.Close()
-
 	ordersHandler := &OrdersHandler{
 		ordersRepository: ordersRepository,
-		kafkaClient:      kafkaClient,
+		kafkaClient: kafkaUtils.NewWriter(kafkaUtils.Config{
+			Brokers: []string{"localhost:29092"},
+			Topic:   "orders",
+			GroupID: "orders-group",
+		}),
 	}
+	defer kafkaUtils.CloseWriter(ordersHandler.kafkaClient)
 
 	router := gin.Default()
 	router.GET("/orders", ordersHandler.getAll)
@@ -49,7 +47,7 @@ func main() {
 
 type OrdersHandler struct {
 	ordersRepository *repository.OrdersRepository
-	kafkaClient      *kafka_client.Client
+	kafkaClient      *kafka.Writer
 }
 
 func (handler *OrdersHandler) getAll(context *gin.Context) {
@@ -97,7 +95,7 @@ func (handler *OrdersHandler) createOrder(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
-	err = handler.kafkaClient.Writer().WriteMessages(context, getOrderCreatedMessage(result))
+	err = handler.kafkaClient.WriteMessages(context, getOrderCreatedMessage(result))
 	if err != nil {
 		log.Print(err)
 	}
