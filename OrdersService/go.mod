@@ -1,4 +1,4 @@
-module example.com/hello
+module example.com/OrdersService
 
 go 1.25.3
 
