@@ -2,6 +2,7 @@ package kafka_client
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -18,6 +19,7 @@ type Config struct {
 	GroupID string
 }
 
+// NewClient TODO: left only reader/writer not both
 func NewClient(config Config) *Client {
 	return &Client{
 		writer: &kafka.Writer{
@@ -30,9 +32,12 @@ func NewClient(config Config) *Client {
 			Brokers:        config.Brokers,
 			GroupID:        config.GroupID,
 			Topic:          config.Topic,
-			MinBytes:       10e3, // 10KB
+			MinBytes:       1,
 			MaxBytes:       10e6, // 10MB
 			CommitInterval: time.Second,
+			StartOffset:    kafka.LastOffset,
+			Logger:         log.New(os.Stdout, "KAFKA-INFO: ", log.LstdFlags),
+			ErrorLogger:    log.New(os.Stderr, "KAFKA-ERR: ", log.LstdFlags),
 		}),
 	}
 }
