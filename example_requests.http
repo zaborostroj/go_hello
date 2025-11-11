@@ -1,0 +1,22 @@
+GET http://localhost:8080/orders
+Accept: application/json
+
+###
+GET http://localhost:8080/orders/00cc3bf5-9b82-42ff-80a3-63906aba8ce6
+Accept: application/json
+
+###
+# curl -X POST http://localhost:8080/orders
+#  -H "Content-Type: application/json"
+#  -d '{"product": "Apples", "amount": 42}'
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+{
+  "product": "shit",
+  "amount": 42
+}
+
+###
+DELETE http://localhost:8080/orders/ec11c57c-58f2-45c6-b048-282387e7b53d
+Content-Type: application/json
