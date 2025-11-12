@@ -1,4 +1,4 @@
-package kafkaUtils
+package KafkaUtils
 
 import (
 	"log"

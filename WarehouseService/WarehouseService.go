@@ -9,19 +9,19 @@ import (
 	"syscall"
 	"time"
 
-	"example.com/kafka-client"
+	"example.com/KafkaUtils"
 	"github.com/segmentio/kafka-go"
 )
 
 func main() {
-	cfg := kafkaUtils.Config{
+	cfg := KafkaUtils.Config{
 		Brokers: []string{"localhost:29092"},
 		Topic:   "orders",
 		GroupID: "warehouse-group",
 	}
 
-	kafkaClient := kafkaUtils.NewReader(cfg)
-	defer kafkaUtils.CloseReader(kafkaClient)
+	kafkaClient := KafkaUtils.NewReader(cfg)
+	defer KafkaUtils.CloseReader(kafkaClient)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
