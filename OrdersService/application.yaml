@@ -1,0 +1,7 @@
+db:
+  prefix: postgresql://
+  username: postgres
+  password: postgres
+  host: localhost
+  port: 5432
+  dbname: example_data

@@ -9,6 +9,7 @@ import (
 
 	"example.com/KafkaUtils"
 	"example.com/OrdersRepository"
+	"example.com/config"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid/v5"
 	uuidext "github.com/jackc/pgx-gofrs-uuid"
@@ -17,10 +18,14 @@ import (
 
 func main() {
 
+	appCfg := config.LoadConfig(".")
+	log.Printf("Application config: %+v", appCfg)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	ordersRepository, err := OrdersRepository.NewOrdersRepository(ctx, "postgresql://postgres:postgres@localhost:5432/example_data?sslmode=disable")
+	dbConnectionString := appCfg.DB.Prefix + appCfg.DB.Username + ":" + appCfg.DB.Password + "@" + appCfg.DB.Host + ":" + appCfg.DB.Port + "/" + appCfg.DB.Dbname + "?sslmode=disable"
+	ordersRepository, err := OrdersRepository.NewOrdersRepository(ctx, dbConnectionString)
 	if err != nil {
 		log.Fatal(err)
 		return
