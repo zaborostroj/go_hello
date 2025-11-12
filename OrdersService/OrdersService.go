@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"example.com/kafka-client"
-	"example.com/repository"
+	"example.com/KafkaUtils"
+	"example.com/OrdersRepository"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid/v5"
 	uuidext "github.com/jackc/pgx-gofrs-uuid"
@@ -20,7 +20,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	ordersRepository, err := repository.NewOrdersRepository(ctx, "postgresql://postgres:postgres@localhost:5432/example_data?sslmode=disable")
+	ordersRepository, err := OrdersRepository.NewOrdersRepository(ctx, "postgresql://postgres:postgres@localhost:5432/example_data?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -29,13 +29,13 @@ func main() {
 
 	ordersHandler := &OrdersHandler{
 		ordersRepository: ordersRepository,
-		kafkaClient: kafkaUtils.NewWriter(kafkaUtils.Config{
+		kafkaClient: KafkaUtils.NewWriter(KafkaUtils.Config{
 			Brokers: []string{"localhost:29092"},
 			Topic:   "orders",
 			GroupID: "orders-group",
 		}),
 	}
-	defer kafkaUtils.CloseWriter(ordersHandler.kafkaClient)
+	defer KafkaUtils.CloseWriter(ordersHandler.kafkaClient)
 
 	router := gin.Default()
 	router.GET("/orders", ordersHandler.getAll)
@@ -46,7 +46,7 @@ func main() {
 }
 
 type OrdersHandler struct {
-	ordersRepository *repository.OrdersRepository
+	ordersRepository *OrdersRepository.OrdersRepository
 	kafkaClient      *kafka.Writer
 }
 
@@ -105,7 +105,7 @@ func (handler *OrdersHandler) createOrder(context *gin.Context) {
 // Order serialized here just for example.
 // The message should be like 'The new order created' to prevent synchronization of messages
 // on the consumer side.
-func getOrderCreatedMessage(order repository.OrderDTO) kafka.Message {
+func getOrderCreatedMessage(order OrdersRepository.OrderDTO) kafka.Message {
 	serializedData, err := json.Marshal(order)
 	if err != nil {
 		log.Printf("Error serializing order: %s", err)

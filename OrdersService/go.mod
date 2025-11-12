@@ -3,13 +3,13 @@ module example.com/OrdersService
 go 1.25.3
 
 replace (
-	example.com/kafka-client => ../kafka-client
-	example.com/repository => ../repository
+	example.com/KafkaUtils => ../KafkaUtils
+	example.com/OrdersRepository => ../OrdersRepository
 )
 
 require (
-	example.com/kafka-client v0.0.0-00010101000000-000000000000
-	example.com/repository v0.0.0-00010101000000-000000000000
+	example.com/KafkaUtils v0.0.0-00010101000000-000000000000
+	example.com/OrdersRepository v0.0.0-00010101000000-000000000000
 	github.com/gin-gonic/gin v1.11.0
 	github.com/gofrs/uuid/v5 v5.4.0
 	github.com/jackc/pgx-gofrs-uuid v0.0.0-20230224015001-1d428863c2e2
