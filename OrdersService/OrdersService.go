@@ -9,6 +9,7 @@ import (
 
 	"example.com/KafkaUtils"
 	"example.com/OrdersRepository"
+	"example.com/config"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid/v5"
 	uuidext "github.com/jackc/pgx-gofrs-uuid"
@@ -17,10 +18,15 @@ import (
 
 func main() {
 
+	appCfg := config.LoadConfig[OrdersServiceConfig]()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	ordersRepository, err := OrdersRepository.NewOrdersRepository(ctx, "postgresql://postgres:postgres@localhost:5432/example_data?sslmode=disable")
+	ordersRepository, err := OrdersRepository.NewOrdersRepository(
+		ctx,
+		appCfg.DB.Prefix+appCfg.DB.Username+":"+appCfg.DB.Password+"@"+appCfg.DB.Host+":"+appCfg.DB.Port+"/"+appCfg.DB.Dbname+"?sslmode=disable",
+	)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -30,9 +36,9 @@ func main() {
 	ordersHandler := &OrdersHandler{
 		ordersRepository: ordersRepository,
 		kafkaClient: KafkaUtils.NewWriter(KafkaUtils.Config{
-			Brokers: []string{"localhost:29092"},
-			Topic:   "orders",
-			GroupID: "orders-group",
+			Brokers: []string{appCfg.KAFKA.Host + ":" + appCfg.KAFKA.Port},
+			Topic:   appCfg.KAFKA.Topic,
+			GroupID: appCfg.KAFKA.GroupId,
 		}),
 	}
 	defer KafkaUtils.CloseWriter(ordersHandler.kafkaClient)
@@ -42,7 +48,7 @@ func main() {
 	router.GET("/orders/:uuid", ordersHandler.getByUuid)
 	router.POST("/orders", ordersHandler.createOrder)
 	router.DELETE("/orders/:uuid", ordersHandler.deleteByUuid)
-	router.Run("localhost:8080")
+	router.Run(appCfg.APP.Host + ":" + appCfg.APP.Port)
 }
 
 type OrdersHandler struct {
