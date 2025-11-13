@@ -1,3 +1,6 @@
+app:
+  host: localhost
+  port: 8080
 db:
   prefix: postgresql://
   username: postgres
@@ -5,3 +8,8 @@ db:
   host: localhost
   port: 5432
   dbname: example_data
+kafka:
+  host: localhost
+  port: 29092
+  topic: orders
+  groupId: orders-group

@@ -8,37 +8,28 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Config struct {
-	DB struct {
-		Prefix   string
-		Username string
-		Password string
-		Host     string
-		Port     string
-		Dbname   string
-	}
-}
-
-func LoadConfig(path string) *Config {
+func LoadConfig[T any]() T {
 	env := os.Getenv("APP_ENV")
 	configName := "application"
 	if env != "" {
 		configName = fmt.Sprintf("application-%s", env)
 	}
-	viper.SetConfigName(configName)
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(path)
-	viper.AutomaticEnv()
 
-	err := viper.ReadInConfig()
-	if err != nil {
+	v := viper.New()
+	v.SetConfigName(configName)
+	v.SetConfigType("yaml")
+	v.AddConfigPath(".")
+	v.AutomaticEnv()
+
+	if err := v.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config: %s", err)
 	}
 
-	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
+	var config T
+	if err := v.Unmarshal(&config); err != nil {
 		log.Fatalf("Error parsing config: %s", err)
 	}
+	log.Printf("Application config: %+v", config)
 
-	return &cfg
+	return config
 }

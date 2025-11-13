@@ -10,16 +10,19 @@ import (
 	"time"
 
 	"example.com/KafkaUtils"
+	"example.com/config"
 	"github.com/segmentio/kafka-go"
 )
 
 func main() {
-	cfg := KafkaUtils.Config{
-		Brokers: []string{"localhost:29092"},
-		Topic:   "orders",
-		GroupID: "warehouse-group",
-	}
 
+	appCfg := config.LoadConfig[WarehouseServiceConfig]()
+
+	cfg := KafkaUtils.Config{
+		Brokers: []string{appCfg.KAFKA.Host + ":" + appCfg.KAFKA.Port},
+		Topic:   appCfg.KAFKA.Topic,
+		GroupID: appCfg.KAFKA.GroupId,
+	}
 	kafkaClient := KafkaUtils.NewReader(cfg)
 	defer KafkaUtils.CloseReader(kafkaClient)
 
