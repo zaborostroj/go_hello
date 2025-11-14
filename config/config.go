@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -19,6 +20,7 @@ func LoadConfig[T any]() T {
 	v.SetConfigName(configName)
 	v.SetConfigType("yaml")
 	v.AddConfigPath(".")
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
 
 	if err := v.ReadInConfig(); err != nil {
