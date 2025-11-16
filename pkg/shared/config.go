@@ -1,4 +1,4 @@
-package config
+package shared
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func LoadConfig[T any]() T {
+func LoadConfig[T any](path string) T {
 	env := os.Getenv("APP_ENV")
 	configName := "application"
 	if env != "" {
@@ -19,7 +19,7 @@ func LoadConfig[T any]() T {
 	v := viper.New()
 	v.SetConfigName(configName)
 	v.SetConfigType("yaml")
-	v.AddConfigPath(".")
+	v.AddConfigPath("../../configs/" + path)
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
 

@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="OrdersService" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="go_hello" />
-    <working_directory value="$PROJECT_DIR$/OrdersService" />
+    <working_directory value="$PROJECT_DIR$/internal/orders" />
     <kind value="PACKAGE" />
-    <package value="example.com/OrdersService" />
+    <package value="example.com/zaborostroj/go_hello/cmd/orders-service" />
     <directory value="$PROJECT_DIR$" />
     <filePath value="$PROJECT_DIR$/controller/orders_controller.go" />
     <method v="2" />

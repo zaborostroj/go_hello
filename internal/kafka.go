@@ -1,4 +1,4 @@
-package KafkaUtils
+package internal
 
 import (
 	"log"

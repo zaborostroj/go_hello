@@ -18,9 +18,6 @@ coverage.out
 vendor/
 Godeps/
 
-# Package objects
-pkg/
-
 # Go workspace and module cache (user-specific)
 GOPATH/pkg/
 GOMODCACHE/
