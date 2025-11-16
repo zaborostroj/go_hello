@@ -1,6 +1,6 @@
-package main
+package warehouse
 
-type WarehouseServiceConfig struct {
+type ServiceConfig struct {
 	KAFKA struct {
 		Host    string
 		Port    string

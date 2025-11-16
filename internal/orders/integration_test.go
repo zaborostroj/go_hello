@@ -1,4 +1,4 @@
-package main
+package orders
 
 import (
 	"bytes"
@@ -19,19 +19,15 @@ import (
 
 var db *sql.DB
 
-const DbUser = "postgres"
-const DbPassword = "postgres"
-const DbDbname = "example_data"
-
 func setupPostgresContainer(t *testing.T) (tc.Container, string) {
 	ctx := context.Background()
 	req := tc.ContainerRequest{
 		Image:        "postgres:16-alpine",
 		ExposedPorts: []string{"5432/tcp"},
 		Env: map[string]string{
-			"POSTGRES_USER":     DbUser,
-			"POSTGRES_PASSWORD": DbPassword,
-			"POSTGRES_DB":       DbDbname,
+			"POSTGRES_USER":     "postgres",
+			"POSTGRES_PASSWORD": "postgres",
+			"POSTGRES_DB":       "example_data",
 		},
 		WaitingFor: wait.ForListeningPort("5432/tcp"),
 	}
@@ -99,7 +95,7 @@ func TestOrdersService_CRUD(t *testing.T) {
 
 	// --- Run OrdersService ---
 	go func() {
-		main()
+		Start()
 	}()
 	time.Sleep(3 * time.Second)
 
