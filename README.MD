@@ -4,4 +4,9 @@
 4. Run OrdersService, WarehouseService
 5. Try to send example requests 
 
-
+```bash
+make build
+make test
+make test-orders
+make clean
+```
