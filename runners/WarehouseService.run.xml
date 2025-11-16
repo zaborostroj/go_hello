@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="WarehouseService" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="go_hello" />
-    <working_directory value="$PROJECT_DIR$/WarehouseService" />
+    <working_directory value="$PROJECT_DIR$/internal/warehouse" />
     <kind value="PACKAGE" />
-    <package value="WarehouseService" />
+    <package value="example.com/zaborostroj/go_hello/cmd/warehouse-service" />
     <directory value="$PROJECT_DIR$" />
     <filePath value="$PROJECT_DIR$/WarehouseService/WarehouseService.go" />
     <method v="2" />

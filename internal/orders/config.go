@@ -1,6 +1,6 @@
-package main
+package orders
 
-type OrdersServiceConfig struct {
+type ServiceConfig struct {
 	APP struct {
 		Host string
 		Port string

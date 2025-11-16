@@ -1,4 +1,4 @@
-package main
+package warehouse
 
 import (
 	"context"
@@ -9,22 +9,22 @@ import (
 	"syscall"
 	"time"
 
-	"example.com/KafkaUtils"
-	"example.com/config"
+	"example.com/zaborostroj/go_hello/internal"
+	config "example.com/zaborostroj/go_hello/pkg/shared"
 	"github.com/segmentio/kafka-go"
 )
 
-func main() {
+func Start() {
 
-	appCfg := config.LoadConfig[WarehouseServiceConfig]()
+	appCfg := config.LoadConfig[ServiceConfig]("warehouse-service")
 
-	cfg := KafkaUtils.Config{
+	cfg := internal.Config{
 		Brokers: []string{appCfg.KAFKA.Host + ":" + appCfg.KAFKA.Port},
 		Topic:   appCfg.KAFKA.Topic,
 		GroupID: appCfg.KAFKA.GroupId,
 	}
-	kafkaClient := KafkaUtils.NewReader(cfg)
-	defer KafkaUtils.CloseReader(kafkaClient)
+	kafkaClient := internal.NewReader(cfg)
+	defer internal.CloseReader(kafkaClient)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

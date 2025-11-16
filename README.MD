@@ -3,3 +3,9 @@
 3. Run docker-compose up -d from the root directory
 4. Run OrdersService, WarehouseService
 5. Try to send example requests 
+
+Building executables:
+```bash
+cd OrdersService
+go build -o orders-service ./cmd/orders-service
+```
